@@ -1,10 +1,8 @@
 pipeline {
     agent any
 
-
-
     environment {
-        SONARQUBE_ENV = 'SonarQube Scanner'  // Ensure that this matches the actual name of your SonarQube installation
+        SONARQUBE_ENV = 'SonarQube_server'  // Ensure that this matches the actual name of your SonarQube installation in Jenkins
     }
 
     stages {
@@ -25,9 +23,9 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube Scanner') {  // Use the environment variable for SonarQube
-                    script {
-                        bat 'mvn sonar:sonar'  // Run only SonarQube analysis without rebuilding
+                script {
+                    withSonarQubeEnv('SonarQube_server') {  // Use the correct name of your SonarQube installation in Jenkins
+                        bat 'mvn sonar:sonar'  // Running SonarQube analysis; clean package is not needed here since you already built the project
                     }
                 }
             }
@@ -37,7 +35,7 @@ pipeline {
             steps {
                 script {
                     timeout(time: 1, unit: 'MINUTES') {  // Wait for the SonarQube quality gate result
-                        waitForQualityGate abortPipeline: true
+                        waitForQualityGate abortPipeline: true  // Abort the pipeline if the quality gate fails
                     }
                 }
             }
@@ -47,6 +45,12 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
