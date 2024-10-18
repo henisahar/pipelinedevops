@@ -1,31 +1,32 @@
 pipeline {
     agent any
 
+
     environment {
-        SONARQUBE_ENV = 'SonarQube_server'  // Ensure that this matches the actual name of your SonarQube installation in Jenkins
+        SONARQUBE_ENV = 'SonarQube Scanner'
+        SONAR_TOKEN = credentials('sonarqube-token')  // Reference the credentials ID you created
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm  // Checkout the source code from the repository
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
                 script {
-                    echo 'Building the project...'
-                    bat 'mvn clean package'  // Use 'sh' for Linux/macOS, 'bat' is for Windows
+                    bat 'mvn clean package'
                 }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    withSonarQubeEnv('SonarQube_server') {  // Use the correct name of your SonarQube installation in Jenkins
-                        bat 'mvn sonar:sonar'  // Running SonarQube analysis; clean package is not needed here since you already built the project
+                withSonarQubeEnv('SonarQube Scanner') {
+                    script {
+                        bat "mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN"
                     }
                 }
             }
@@ -34,8 +35,8 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    timeout(time: 1, unit: 'MINUTES') {  // Wait for the SonarQube quality gate result
-                        waitForQualityGate abortPipeline: true  // Abort the pipeline if the quality gate fails
+                    timeout(time: 1, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
@@ -45,9 +46,6 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
-        }
-        success {
-            echo 'Pipeline completed successfully.'
         }
         failure {
             echo 'Pipeline failed.'
