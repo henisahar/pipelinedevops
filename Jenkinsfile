@@ -1,10 +1,7 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3.x'   // Assuming you have a Maven tool configured as 'Maven 3.x'
-        jdk 'JDK 17'        // Assuming JDK 17 is configured as 'JDK 17'
-    }
+
 
     environment {
         SONARQUBE_ENV = 'SonarQube Scanner'  // Ensure that this matches the actual name of your SonarQube installation
