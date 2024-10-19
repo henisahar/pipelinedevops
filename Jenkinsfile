@@ -26,9 +26,8 @@ pipeline {
             steps {
                 script {
                     // Using the SonarQube environment variable set earlier
-                      withSonarQubeEnv('SonarQube_server') {
-                                                 bat 'mvn clean package sonar:sonar'
-                                             }
+                    withSonarQubeEnv('SonarQube_server') {
+                        bat 'mvn sonar:sonar'  // No need to run 'clean package' again
                     }
                 }
             }
@@ -48,6 +47,9 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
