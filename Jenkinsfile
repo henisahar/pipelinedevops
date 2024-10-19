@@ -26,10 +26,9 @@ pipeline {
             steps {
                 script {
                     // Using the SonarQube environment variable set earlier
-                    withSonarQubeEnv(SONARQUBE_ENV) {
-                        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                            bat 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'  // Inject token into the SonarQube command
-                        }
+                      withSonarQubeEnv('SonarQube_server') {
+                                                 bat 'mvn clean package sonar:sonar'
+                                             }
                     }
                 }
             }
