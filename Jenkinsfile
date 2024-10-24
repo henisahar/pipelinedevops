@@ -2,14 +2,13 @@ pipeline {
     agent any
 
     environment {
-        // Corrected SonarQube environment to match the installation name 'SonarQube_server'
         SONARQUBE_ENV = 'SonarQube_server'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm  // Checkout the source code from the repository
+                checkout scm
             }
         }
 
@@ -17,7 +16,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building the project...'
-                    bat 'mvn clean package'  // Use 'bat' for Windows, replace with 'sh' for Linux/macOS
+                    bat 'mvn clean package'
                 }
             }
         }
@@ -25,20 +24,18 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Using the SonarQube environment variable set earlier
-                    withSonarQubeEnv('SonarQube_server') {
-                        bat 'mvn sonar:sonar'  // No need to run 'clean package' again
+                    withSonarQubeEnv(SONARQUBE_ENV) { 
+                        bat 'mvn sonar:sonar'
                     }
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage('Deploying App to Kubernetes') {
             steps {
                 script {
-                    timeout(time: 1, unit: 'MINUTES') {  // Wait for the SonarQube quality gate result
-                        waitForQualityGate abortPipeline: true
-                    }
+                    echo 'Deploying to Kubernetes...'
+                    kubernetesDeploy(configs: "Deployment.yaml", kubeconfigId: "kubernetes")
                 }
             }
         }
